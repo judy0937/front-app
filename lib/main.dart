@@ -3,6 +3,7 @@ import 'package:test2/purches/add_purches_screen.dart';
 
 import 'ChooseRoleScreen/ChooseRoleScreen.dart';
 import 'bills/invoice_screen.dart';
+import 'inventory/inventory_screen.dart';
 import 'medicine/drug_suggestions_screen.dart';
 import 'medicine/addnewmedicineScreen.dart';
 import 'add_supplier/addsuplierScreen.dart';
@@ -30,7 +31,7 @@ class MyApp extends StatelessWidget {
 
       title: 'Flutter Demo',
 
-      home: ChooseRoleScreen(),
+      home: PharmacyDashboard(),
       /*SellMedicineScreen(medicineName: "Paracetamol",
         unitPrice: 3.5,
         stock: 120, onSellComplete: (int soldQuantity) {  },),*/

@@ -15,7 +15,7 @@ class _PharmacyDashboardState extends State<PharmacyDashboard> {
   int _currentIndex = 2; // Default to Companies tab
 
   final List<Widget> _pages = [
-    InventoryDashboard(),
+    MedicineInventoryScreen(),
     PurchaseHistoryScreen(),
     ShowCompaniesScreen(),
     SuppliersScreen(),

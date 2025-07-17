@@ -1,174 +1,142 @@
 import 'package:flutter/material.dart';
 
-class AddMedicineScreen extends StatefulWidget {
+class AddInventoryScreen extends StatefulWidget {
   @override
-  State<AddMedicineScreen> createState() => _AddMedicineScreenState();
+  _AddInventoryScreenState createState() => _AddInventoryScreenState();
 }
 
-class _AddMedicineScreenState extends State<AddMedicineScreen> {
-  final TextEditingController nameController = TextEditingController();
-  final TextEditingController scientificNameController = TextEditingController();
-  final TextEditingController brandController = TextEditingController();
-  final TextEditingController quantityController = TextEditingController();
-  final TextEditingController priceController = TextEditingController();
-  final TextEditingController expirationDateController = TextEditingController();
+class _AddInventoryScreenState extends State<AddInventoryScreen> {
+  final _formKey = GlobalKey<FormState>();
+  int? medicineId;
+  String locationType = "PHARMACY";
+  int quantity = 0;
+  String costPrice = '';
+  String sellingPrice = '';
+  DateTime? expiryDate;
 
-  String? selectedCategory;
+  void submitInventory() {
+    if (_formKey.currentState!.validate()) {
+      final payload = {
+        "medicine_id": medicineId,
+        "location_type": locationType,
+        "quantity": quantity,
+        "cost_price": costPrice,
+        "selling_price": sellingPrice,
+        "expiry_date": expiryDate?.toIso8601String(),
+        "pharmacy_id": 1, // يمكنك تغييره حسب الحاجة
+      };
 
-  // Function to validate inputs
-  bool _validateInputs() {
-    if (nameController.text.isEmpty ||
-        scientificNameController.text.isEmpty ||
-        brandController.text.isEmpty ||
-        quantityController.text.isEmpty ||
-        priceController.text.isEmpty ||
-        expirationDateController.text.isEmpty ||
-        selectedCategory == null) {
-      return false;
-    }
+      print("✅ Sending this data:");
+      print(payload);
 
-    if (double.tryParse(quantityController.text) == null ||
-        double.tryParse(priceController.text) == null) {
-      return false;
-    }
-
-    return true;
-  }
-
-  Future<void> _selectDate(BuildContext context) async {
-    DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime(2023),
-      lastDate: DateTime(2030),
-    );
-    if (picked != null) {
-      setState(() {
-        expirationDateController.text = "${picked.month}/${picked.day}/${picked.year}";
-      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("تم تجهيز البيانات بنجاح!")),
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
-      appBar: _customAppBar(),
-      backgroundColor: Color(0xFFF1F3F6),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+      appBar: AppBar(
+        title: Text("Add to Inventory"),
+        backgroundColor: Colors.teal, // هنا تغير اللون إلى Teal
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Form(
+          key: _formKey,
+          child: ListView(
             children: [
-              _buildLabeledField("Medicine Name", nameController),
-              _buildLabeledField("Scientific Name", scientificNameController),
-              _buildLabeledField("Brand", brandController),
-              Row(
-                children: [
-                  Expanded(child: _buildLabeledField("Quantity", quantityController, inputType: TextInputType.number)),
-                  SizedBox(width: 10),
-                  Expanded(child: _buildLabeledField("Price", priceController, inputType: TextInputType.numberWithOptions(decimal: true))),
-                ],
-              ),
-              SizedBox(height: 15),
-              Text("Category", style: _labelStyle()),
-              SizedBox(height: 5),
-              DropdownButtonFormField<String>(
-                decoration: _inputDecoration().copyWith(
-                  hintText: "Select medicine category",
+              DropdownButtonFormField<int>(
+                decoration: InputDecoration(
+                  labelText: "Medicine ID",
+                  border: OutlineInputBorder(),
                 ),
-                items: ['Antibiotic', 'Painkiller', 'Vaccine', 'Other']
-                    .map((category) => DropdownMenuItem(
-                  value: category,
-                  child: Text(category),
+                value: medicineId,
+                items: [10, 11, 12]
+                    .map((id) => DropdownMenuItem(
+                  value: id,
+                  child: Text("Medicine $id"),
                 ))
                     .toList(),
-                onChanged: (value) {
+                onChanged: (val) {
                   setState(() {
-                    selectedCategory = value;
+                    medicineId = val;
                   });
                 },
+                validator: (val) => val == null ? "الرجاء اختيار دواء" : null,
               ),
-              SizedBox(height: 15),
-              Text("Expiration Date", style: _labelStyle()),
-              SizedBox(height: 5),
-              TextField(
-                controller: expirationDateController,
-                readOnly: true,
-                onTap: () => _selectDate(context),
-                decoration: _inputDecoration().copyWith(
-                  hintText: "Enter expiration date",
-                  suffixIcon: Icon(Icons.calendar_today),
+              SizedBox(height: 16),
+              TextFormField(
+                decoration: InputDecoration(
+                  labelText: "الكمية",
+                  border: OutlineInputBorder(),
                 ),
+                keyboardType: TextInputType.number,
+                onChanged: (val) => quantity = int.tryParse(val) ?? 0,
+                validator: (val) => val == null || val.isEmpty ? "أدخل الكمية" : null,
+              ),
+              SizedBox(height: 16),
+              TextFormField(
+                decoration: InputDecoration(
+                  labelText: "سعر التكلفة",
+                  border: OutlineInputBorder(),
+                ),
+                keyboardType: TextInputType.number,
+                onChanged: (val) => costPrice = val,
+                validator: (val) => val == null || val.isEmpty ? "أدخل سعر التكلفة" : null,
+              ),
+              SizedBox(height: 16),
+              TextFormField(
+                decoration: InputDecoration(
+                  labelText: "سعر البيع",
+                  border: OutlineInputBorder(),
+                ),
+                keyboardType: TextInputType.number,
+                onChanged: (val) => sellingPrice = val,
+                validator: (val) => val == null || val.isEmpty ? "أدخل سعر البيع" : null,
+              ),
+              SizedBox(height: 16),
+              ListTile(
+                shape: RoundedRectangleBorder(
+                  side: BorderSide(color: Colors.grey.shade400),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                title: Text(expiryDate == null
+                    ? "اختر تاريخ انتهاء الصلاحية"
+                    : "تاريخ الانتهاء: ${expiryDate!.toLocal().toString().split(' ')[0]}"),
+                trailing: Icon(Icons.calendar_today, color: Colors.teal),
+                onTap: () async {
+                  DateTime? picked = await showDatePicker(
+                    context: context,
+                    initialDate: DateTime.now(),
+                    firstDate: DateTime(2023),
+                    lastDate: DateTime(2035),
+                  );
+                  if (picked != null) {
+                    setState(() {
+                      expiryDate = picked;
+                    });
+                  }
+                },
               ),
               SizedBox(height: 30),
-              Center(
+              SizedBox(
+                width: double.infinity,
+                height: 50,
                 child: ElevatedButton(
-                  onPressed: () {
-                    if (_validateInputs()) {
-                      print("Medicine Saved!");
-                    } else {
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                        content: Text("Please fill in all fields with valid data."),
-                        backgroundColor: Colors.red,
-                      ));
-                    }
-                  },
+                  onPressed: submitInventory,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.teal,
-                    padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(12),
                     ),
+                    textStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
-                  child: Text(
-                    'Add New Medicine',
-                    style: TextStyle(color: Colors.white, fontSize: 16),
-                  ),
-                ),
-              )
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  PreferredSizeWidget _customAppBar() {
-    return PreferredSize(
-      preferredSize: Size.fromHeight(100),
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.teal[500],
-          borderRadius: BorderRadius.only(
-            bottomLeft: Radius.circular(30),
-            bottomRight: Radius.circular(30),
-          ),
-        ),
-        child: SafeArea(
-          child: Stack(
-            children: [
-              Center(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 20),
-                  child: Text(
-                    'Add New Medicine',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 23,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 10,
-                top: 20,
-                child: IconButton(
-                  icon: Icon(Icons.arrow_back, color: Colors.white),
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
+                  child: Text("حفظ"),
                 ),
               ),
             ],
@@ -176,42 +144,5 @@ class _AddMedicineScreenState extends State<AddMedicineScreen> {
         ),
       ),
     );
-  }
-
-  Widget _buildLabeledField(String label, TextEditingController controller, {TextInputType inputType = TextInputType.text}) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 15),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(label, style: _labelStyle()),
-          SizedBox(height: 5),
-          TextField(
-            controller: controller,
-            keyboardType: inputType,
-            decoration: _inputDecoration().copyWith(
-              hintText: "Enter ${label.toLowerCase()}",
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  InputDecoration _inputDecoration() {
-    return InputDecoration(
-      filled: true,
-      fillColor: Colors.white,
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
-        borderSide: BorderSide(color: Colors.grey.shade300),
-      ),
-      floatingLabelBehavior: FloatingLabelBehavior.auto,
-    );
-  }
-
-  TextStyle _labelStyle() {
-    return TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Colors.grey.shade800);
   }
 }
